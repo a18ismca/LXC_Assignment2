@@ -12,9 +12,14 @@ string secretWord;
 
 char[] underscoreArr;
 
-int remainingGuesses;
+int attempts;
+
+
+// Stringbuilders for both
 
 StringBuilder incorrectGuessedLetters = new StringBuilder();
+
+StringBuilder correctGuessedLetters = new StringBuilder();
 
 // a variable that decides if the word is revealed or not
 
@@ -24,6 +29,7 @@ HangmanGame();
 
 void HangmanGame()
 {
+
     wordUnrevealed = true;
 
     Random random = new Random();
@@ -40,19 +46,23 @@ void HangmanGame()
     FillWithUnderscores(underscoreArr);
 
 
-    // For testing purposes
 
-    Console.WriteLine(secretWord);
+    attempts = 10;
 
-    // For testing purposes
+   
 
-    Console.WriteLine(underscoreArr);
-
-    remainingGuesses = 10;
-
-
-    while(remainingGuesses > 0 && wordUnrevealed)
+    while (attempts > 0 && wordUnrevealed)
     {
+
+        // Hangman hint
+        Console.WriteLine($"The word contains {secretWord.Length} letters");
+
+        // For testing purposes
+
+        Console.Write("Word: ");
+
+        Console.WriteLine(underscoreArr);
+
         try { 
 
         Console.WriteLine("Press 1 to guess a letter. Press 2 to guess a word.");
@@ -65,16 +75,12 @@ void HangmanGame()
             {
 
                 case '1':
-
-                    Console.WriteLine("Redirecting to letter guess...");
-
+                    
                     LetterGuess(secretWord, underscoreArr);
 
                     break;
 
                 case '2':
-
-                    Console.WriteLine("Redirecting to word guess...");
 
                     WordGuess(secretWord, underscoreArr);
 
@@ -93,9 +99,6 @@ void HangmanGame()
             Console.Error.WriteLine("Please press 1 or 2 in order to continue.");
 
         }
-
-        
-       
 
         
     }
@@ -119,6 +122,8 @@ void HangmanGame()
             case '1':
 
                 Console.WriteLine("Starting a new round...");
+
+                ResetStringbuilders(incorrectGuessedLetters, correctGuessedLetters);
 
                 HangmanGame();
 
@@ -147,45 +152,76 @@ void LetterGuess(string secret, char[] underscore_arr)
 
     Console.WriteLine("\n");
 
-    if (secret.Contains(letterGuessed) && !(secret.Equals(underscore_arr)))
+
+    if (secret.Contains(letterGuessed))
     {
-        for(int i = 0; i < secret.Length; i++)
+        if (correctGuessedLetters.ToString().Contains(letterGuessed))
         {
-            if(letterGuessed == secret[i])
-            {
-                underscore_arr[i] = letterGuessed;
-                if (secret.Equals(underscore_arr[i])){
-                    wordUnrevealed = false;
-                }
-            } 
-            Console.Write(underscore_arr[i]);
-            
+            Console.Clear();
+
+            Console.WriteLine($"You have already guessed the letter {letterGuessed}. Attempts left: {attempts}");
         }
+        else {
+
+            for (int i = 0; i < secret.Length; i++)
+            {
+
+                if (letterGuessed == secret[i])
+                {
+
+                    Console.Clear();
+
+                    underscore_arr[i] = letterGuessed;
+
+                    LetterCorrect(letterGuessed);
+
+                    if (!underscore_arr.Contains('_'))
+                    {
+                        WordCorrect(secret);
+                    }
+                }
+            }
+        }
+        Console.WriteLine();
     } 
     
     else if (incorrectGuessedLetters.ToString().Contains(letterGuessed))
     {
-        Console.WriteLine($"You have already guessed the letter {letterGuessed}");
+        DuplicateLetterInput(letterGuessed, attempts);
+
+
     }
     else
     {
-        IncorrectGuessUsingLetters(letterGuessed);
+        LetterIncorrect(letterGuessed);
+        
     }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
-    Console.WriteLine("\n");
 
-    
+    Console.WriteLine($"Incorrectly guessed letters: {incorrectGuessedLetters}");
+
 }
 
-void FillWithUnderscores(char[] arr)
+void LetterIncorrect(char letter)
 {
-    for (int i = 0; i < arr.Length; i++)
-    {
-        arr[i] = '_';
-    }
+    Console.Clear();
+
+    incorrectGuessedLetters.Append(letter);
+
+    reduceNumOfGuesses();
+
 }
 
-// Klart
+void LetterCorrect(char letter)
+{
+    Console.Clear();
+
+    correctGuessedLetters.Append(letter);
+
+    Console.WriteLine($"You have guessed the letter correctly. Attempts remaining: {attempts}");
+}
+
 
 void WordGuess(string secret, char[] underscore_arr)
 {
@@ -198,41 +234,58 @@ void WordGuess(string secret, char[] underscore_arr)
 
     if (secret.Contains(lowerTheWord))
     {
-
-        Console.WriteLine($"You have guessed the word correctly. The word was {secret}");
-
-        wordUnrevealed = false;
-
+        WordCorrect(secret);
     }
     else
     {
+        WordIncorrect();
+    }
 
-        IncorrectGuessUsingWords();
+}
 
+void WordIncorrect()
+{
+    reduceNumOfGuesses();
+}
+
+void WordCorrect(string secret)
+{
+    Console.Clear();
+
+    Console.WriteLine($"You have guessed the word correctly. The word was {secret}");
+
+    wordUnrevealed = false;
+
+}
+
+void FillWithUnderscores(char[] arr)
+{
+    for (int i = 0; i < arr.Length; i++)
+    {
+        arr[i] = '_';
     }
 }
 
-void IncorrectGuessUsingWords()
-{
-
-    reduceNumOfGuesses();
-
-}
-
-void IncorrectGuessUsingLetters(char letter)
-{
-    
-
-    incorrectGuessedLetters.Append(letter);
-
-    reduceNumOfGuesses();
-
-}
 
 void reduceNumOfGuesses()
 {
-    remainingGuesses--;
+    Console.Clear();
 
-    Console.WriteLine($"Incorrect, try again. Guesses remaining: {remainingGuesses}");
+    attempts--;
+
+    Console.WriteLine($"Incorrect, try again. Guesses remaining: {attempts}");
 
 }
+
+void DuplicateLetterInput(char input, int tries)
+{
+    Console.WriteLine($"You have already guessed the letter {input}. Attempts left: {tries}");
+}
+
+void ResetStringbuilders(StringBuilder sb1, StringBuilder sb2)
+{
+    sb1.Replace(sb1.ToString(), "");
+    sb2.Replace(sb2.ToString(), "");
+}
+
+
