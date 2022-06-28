@@ -157,9 +157,7 @@ void LetterGuess(string secret, char[] underscore_arr)
     {
         if (correctGuessedLetters.ToString().Contains(letterGuessed))
         {
-            Console.Clear();
-
-            Console.WriteLine($"You have already guessed the letter {letterGuessed}. Attempts left: {attempts}");
+            DuplicateLetterInput(letterGuessed, attempts);
         }
         else {
 
@@ -187,6 +185,8 @@ void LetterGuess(string secret, char[] underscore_arr)
     
     else if (incorrectGuessedLetters.ToString().Contains(letterGuessed))
     {
+        
+
         DuplicateLetterInput(letterGuessed, attempts);
 
 
@@ -279,6 +279,7 @@ void reduceNumOfGuesses()
 
 void DuplicateLetterInput(char input, int tries)
 {
+    Console.Clear();
     Console.WriteLine($"You have already guessed the letter {input}. Attempts left: {tries}");
 }
 
