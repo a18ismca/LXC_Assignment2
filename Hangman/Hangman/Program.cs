@@ -39,7 +39,7 @@ void HangmanGame()
     secretWord = listOfWords[random.Next(0, listOfWords.Length)];
 
 
-    // Assigning the variable to a char that corresponds to the length of the secret word. The var below will consist of underscores. 
+    // Assigning the variable to a char that corresponds to the length of the secret word. The variable below will consist of underscores. 
 
     underscoreArr = new char[secretWord.Length];
 
@@ -57,7 +57,7 @@ void HangmanGame()
         // Hangman hint
         Console.WriteLine($"The word contains {secretWord.Length} letters");
 
-        // For testing purposes
+        // Show progress
 
         Console.Write("Word: ");
 
@@ -66,6 +66,8 @@ void HangmanGame()
         try { 
 
         Console.WriteLine("Press 1 to guess a letter. Press 2 to guess a word.");
+
+            // Let the player decide in what way to make an attempt
 
         char decision = Console.ReadKey().KeyChar;
 
@@ -76,17 +78,25 @@ void HangmanGame()
 
                 case '1':
                     
+                    // Guess with a letter if 1 is pressed
+
                     LetterGuess(secretWord, underscoreArr);
 
                     break;
 
                 case '2':
 
+                    // Guess with a word if 2 is pressed
+
                     WordGuess(secretWord, underscoreArr);
 
                     break;
 
                 default:
+
+                    // Clear window
+
+                    Console.Clear();
 
                     Console.WriteLine("Please press 1 or 2 in order to continue.");
 
@@ -96,6 +106,8 @@ void HangmanGame()
         }
         catch {
 
+            Console.Clear();
+
             Console.Error.WriteLine("Please press 1 or 2 in order to continue.");
 
         }
@@ -103,7 +115,11 @@ void HangmanGame()
         
     }
 
-    Console.WriteLine("Game over. \n Press 1 to start a new game. Press Q to quit.");
+    // The game over message depends on the number of attempts when the game is over. 
+
+    if(attempts > 0) Console.WriteLine("Game over. \n\nPress 1 to start a new game. Press Q to quit.");
+
+    else if (attempts == 0) Console.WriteLine("No attempts left! Game over. \n\nPress 1 to start a new game. Press Q to quit.");
 
     char input = Console.ReadKey().KeyChar;
 
@@ -123,6 +139,7 @@ void HangmanGame()
 
                 Console.WriteLine("Starting a new round...");
 
+                // Reset previous data (letters) stored in the stringbuilders
                 ResetStringbuilders(incorrectGuessedLetters, correctGuessedLetters);
 
                 HangmanGame();
@@ -144,6 +161,7 @@ void HangmanGame()
 
 }
 
+
 void LetterGuess(string secret, char[] underscore_arr)
 {
     Console.WriteLine("Enter a letter: ");
@@ -152,9 +170,12 @@ void LetterGuess(string secret, char[] underscore_arr)
 
     Console.WriteLine("\n");
 
+    // Check if the secret word contains the letter that has been guessed from the user.
 
     if (secret.Contains(letterGuessed))
     {
+        // Check if the correct letter has been inputted more than once.
+
         if (correctGuessedLetters.ToString().Contains(letterGuessed))
         {
             DuplicateLetterInput(letterGuessed, attempts);
@@ -166,6 +187,7 @@ void LetterGuess(string secret, char[] underscore_arr)
 
                 if (letterGuessed == secret[i])
                 {
+                    // Fill the underscore char with the letter guessed at the correct position
 
                     Console.Clear();
 
@@ -173,6 +195,7 @@ void LetterGuess(string secret, char[] underscore_arr)
 
                     LetterCorrect(letterGuessed);
 
+                    // If the underscore_arr does not contain any underscores, the player has won the game.
                     if (!underscore_arr.Contains('_'))
                     {
                         WordCorrect(secret);
@@ -181,27 +204,33 @@ void LetterGuess(string secret, char[] underscore_arr)
             }
         }
         Console.WriteLine();
-    } 
-    
+    }
+
+    // Check if the incorrect letter has been pressed more than once.
+
     else if (incorrectGuessedLetters.ToString().Contains(letterGuessed))
     {
-        
-
         DuplicateLetterInput(letterGuessed, attempts);
 
-
     }
+
+    // If the letter has not been guessed before and the letter is not included
+    // in the secret word, notify the player the number of attempts
+    // and the letters that already have been guessed
+
     else
     {
         LetterIncorrect(letterGuessed);
         
     }
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
+    // Print out the following when the user has 9 attempts left.
 
-    Console.WriteLine($"Incorrectly guessed letters: {incorrectGuessedLetters}");
+    if (attempts < 10)  Console.WriteLine($"Incorrectly guessed letters: {incorrectGuessedLetters} \n");
 
 }
+
+// Use the letter that is incorrect in the parameter of the method below
 
 void LetterIncorrect(char letter)
 {
@@ -209,7 +238,7 @@ void LetterIncorrect(char letter)
 
     incorrectGuessedLetters.Append(letter);
 
-    reduceNumOfGuesses();
+    reduceNumOfAttempts();
 
 }
 
@@ -219,7 +248,12 @@ void LetterCorrect(char letter)
 
     correctGuessedLetters.Append(letter);
 
-    Console.WriteLine($"You have guessed the letter correctly. Attempts remaining: {attempts}");
+    // If the player's guess has been wrong at one point before guessing the letter right,
+    // the following message that displays the number of attempts left prints out
+
+    if (attempts < 10) Console.WriteLine($"You have guessed the letter correctly. Attempts remaining: {attempts}");
+
+    else Console.WriteLine($"You have guessed the letter correctly.");
 }
 
 
@@ -245,18 +279,20 @@ void WordGuess(string secret, char[] underscore_arr)
 
 void WordIncorrect()
 {
-    reduceNumOfGuesses();
+    reduceNumOfAttempts();
 }
 
 void WordCorrect(string secret)
 {
     Console.Clear();
 
-    Console.WriteLine($"You have guessed the word correctly. The word was {secret}");
+    Console.WriteLine($"You have guessed the word correctly. The word was {secret} \n");
 
     wordUnrevealed = false;
 
 }
+
+// fill underscoreArr with underscores at the outset
 
 void FillWithUnderscores(char[] arr)
 {
@@ -267,13 +303,13 @@ void FillWithUnderscores(char[] arr)
 }
 
 
-void reduceNumOfGuesses()
+void reduceNumOfAttempts()
 {
     Console.Clear();
 
     attempts--;
 
-    Console.WriteLine($"Incorrect, try again. Guesses remaining: {attempts}");
+    if(attempts > 0) Console.WriteLine($"Incorrect, try again. Attempts remaining: {attempts}");
 
 }
 
